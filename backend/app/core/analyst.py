@@ -265,7 +265,7 @@ def _summarise(name: str, args: dict, result: dict) -> str:
 
 INTENTS = [
     ("report", r"\breport\b|briefing|summary for"),
-    ("budget", r"budget|lakh|₹|\binvest|spend|crore"),
+    ("budget", r"budget|lakh|₹|\binvest(?:ment|ments|ing|ed|s)?\b|spend|crore"),
     ("chokepoints", r"chokepoint|min(imum)?[- ]?cut|sever|cut (the )?path"),
     ("spof", r"single point|spof|single-point|redundanc"),
     ("drift", r"drift|shadow|undocumented|stale|out of date"),
