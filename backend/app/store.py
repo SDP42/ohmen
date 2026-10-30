@@ -46,6 +46,7 @@ class Store:
         self.lock = threading.RLock()
         self.ml = LikelihoodModel()
         self.demo = {"running": False, "step": 0, "total": 0}
+        self.demo_epoch = 0  # bumped on reset so an in-flight demo stops writing into the fresh twin
         self.ambient = True
         self.load()
 
@@ -69,6 +70,7 @@ class Store:
 
     def reset(self) -> None:
         with self.lock:
+            self.demo_epoch += 1
             self.db.wipe()
             self.demo = {"running": False, "step": 0, "total": 0}
             self.load()

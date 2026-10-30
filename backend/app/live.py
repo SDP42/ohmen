@@ -46,12 +46,15 @@ async def run_flagship(store: Store, hub: Hub) -> None:
     if store.demo["running"]:
         return
     store.demo = {"running": True, "step": 0, "total": len(FLAGSHIP)}
+    epoch = store.demo_epoch
     await hub.broadcast({"type": "demo", "demo": store.demo})
     loop = asyncio.get_running_loop()
     start = loop.time()
     try:
         for i, step in enumerate(FLAGSHIP, start=1):
             await asyncio.sleep(max(0.0, start + step["delay"] - loop.time()))
+            if store.demo_epoch != epoch:
+                return  # the twin was reset mid-demo
             spec = {k: v for k, v in step.items() if k != "delay"}
             if spec["type"] == "vuln_detected":
                 spec["advisory_id"] = "SIM-2026-0417"
@@ -65,7 +68,8 @@ async def run_flagship(store: Store, hub: Hub) -> None:
             await hub.broadcast({"type": "demo", "demo": store.demo})
         store.record("system", "flagship_demo_completed", "GW-001", {"steps": len(FLAGSHIP)})
     finally:
-        store.demo["running"] = False
+        if store.demo_epoch == epoch:
+            store.demo["running"] = False
 
 
 async def ambient_loop(store: Store, hub: Hub, seed: int = 11) -> None:
