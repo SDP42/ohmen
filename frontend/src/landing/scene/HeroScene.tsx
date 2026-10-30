@@ -37,8 +37,18 @@ function Director({ progress, levels, onChapter }: { progress: MotionValue<numbe
   const tmpPos = useMemo(() => new THREE.Vector3(), []);
   const tmpLook = useMemo(() => new THREE.Vector3(), []);
   const last = useRef(-1);
+  const offsetFor = useRef("");
   useFrame((state, dt) => {
     const d = Math.min(dt, 0.05);
+    // The narrative sits on the left on wide screens, so render the subject right of centre.
+    const { width, height } = state.size;
+    const key = `${width}x${height}`;
+    if (offsetFor.current !== key) {
+      offsetFor.current = key;
+      const cam = state.camera as THREE.PerspectiveCamera;
+      if (width >= 1024) cam.setViewOffset(width, height, -width * 0.17, 0, width, height);
+      else cam.clearViewOffset();
+    }
     smooth.current = damp(smooth.current, progress.get(), 3.4, d);
     const p = smooth.current;
     let i = 0;
