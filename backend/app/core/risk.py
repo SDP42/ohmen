@@ -41,6 +41,7 @@ from .model import (
     Twin,
     attack_vector,
     clamp,
+    exploit_score,
 )
 
 DEFAULT_WEIGHTS: dict[str, float] = {
@@ -91,7 +92,7 @@ def _vulnerability_factor(twin: Twin, asset_id: str, w_ke: float) -> tuple[float
     best, best_row = 0.0, None
     for m in twin.open_matches(asset_id):
         adv = twin.advisories[m["advisory_id"]]
-        exploit = min(1.0, EXPLOIT_SCORE[adv["exploit_maturity"]] * w_ke)
+        exploit = min(1.0, exploit_score(adv) * w_ke)
         v = adv["cvss"] / 10 * (0.5 + 0.5 * exploit) * MATCH_CONFIDENCE[m["status"]] * AV_FACTOR[attack_vector(adv)]
         if adv["kev"]:
             v *= 1 + 0.12 * w_ke

@@ -109,6 +109,11 @@ def match_software(software: dict, advisory: dict) -> dict | None:
     return {"advisory_id": advisory["id"], "status": status, "reason": reason, "software": software}
 
 
+def exploit_score(advisory: dict) -> float:
+    """Exploit maturity as a number; forecasts override it with a continuous projection."""
+    return advisory.get("exploit_score", EXPLOIT_SCORE[advisory["exploit_maturity"]])
+
+
 def attack_vector(advisory: dict) -> str:
     m = re.search(r"AV:([NALP])", advisory.get("cvss_vector", ""))
     return m.group(1) if m else "N"

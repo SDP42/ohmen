@@ -21,12 +21,12 @@ from dataclasses import dataclass, field
 from .model import (
     AUTH_WEAKNESS,
     CONTROL_PROTOCOLS,
-    EXPLOIT_SCORE,
     MANAGEMENT_PROTOCOLS,
     MATCH_CONFIDENCE,
     Twin,
     attack_vector,
     clamp,
+    exploit_score,
 )
 
 STATE_RANK = {"ok": 0, "impaired": 1, "degraded": 2, "on_backup": 3, "lost": 4}
@@ -57,7 +57,7 @@ def exploitability(twin: Twin, asset_id: str, adjacent: bool) -> tuple[float, st
         adv = twin.advisories[m["advisory_id"]]
         av = attack_vector(adv)
         if av == "N" or (av == "A" and adjacent):
-            score = adv["cvss"] / 10 * (0.45 + 0.55 * EXPLOIT_SCORE[adv["exploit_maturity"]]) * MATCH_CONFIDENCE[m["status"]]
+            score = adv["cvss"] / 10 * (0.45 + 0.55 * exploit_score(adv)) * MATCH_CONFIDENCE[m["status"]]
             if adv["kev"]:
                 score *= 1.12
             if score > best:
