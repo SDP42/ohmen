@@ -12,6 +12,7 @@ from ..core.graph import observed_edges
 from ..core.model import CRITICALITY_LABEL
 from ..live import Hub, publish
 from ..store import Store
+from .auth import get_actor
 from .deps import get_hub, get_store
 
 router = APIRouter(prefix="/api", tags=["twin"])
@@ -114,8 +115,8 @@ class AssetPatch(BaseModel):
 
 
 @router.patch("/assets/{asset_id}")
-async def update_asset(asset_id: str, patch: AssetPatch, store: Store = Depends(get_store), hub: Hub = Depends(get_hub)) -> dict:
-    out = store.update_asset(asset_id, patch.model_dump(exclude_none=True))
+async def update_asset(asset_id: str, patch: AssetPatch, store: Store = Depends(get_store), hub: Hub = Depends(get_hub), actor: str = Depends(get_actor)) -> dict:
+    out = store.update_asset(asset_id, patch.model_dump(exclude_none=True), actor=actor)
     if out.get("event"):
         await publish(store, hub, out["event"], out.get("snapshot"))
     return {"asset": out["asset"], "changes": out["changes"], "summary": store.summary()}
@@ -135,15 +136,15 @@ class EdgeIn(BaseModel):
 
 
 @router.post("/graph/edges")
-async def add_edge(edge: EdgeIn, store: Store = Depends(get_store), hub: Hub = Depends(get_hub)) -> dict:
-    out = store.add_edge(edge.model_dump())
+async def add_edge(edge: EdgeIn, store: Store = Depends(get_store), hub: Hub = Depends(get_hub), actor: str = Depends(get_actor)) -> dict:
+    out = store.add_edge(edge.model_dump(), actor=actor)
     await publish(store, hub, out["event"], out.get("snapshot"))
     return {"edge": out["edge"]}
 
 
 @router.delete("/graph/edges/{edge_id}")
-async def remove_edge(edge_id: str, store: Store = Depends(get_store), hub: Hub = Depends(get_hub)) -> dict:
-    out = store.remove_edge(edge_id)
+async def remove_edge(edge_id: str, store: Store = Depends(get_store), hub: Hub = Depends(get_hub), actor: str = Depends(get_actor)) -> dict:
+    out = store.remove_edge(edge_id, actor=actor)
     await publish(store, hub, out["event"], out.get("snapshot"))
     return {"removed": out["removed"]["id"]}
 

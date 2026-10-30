@@ -13,6 +13,7 @@ from ..core.analyst import Analyst
 from ..core.report import build as build_report
 from ..live import Hub, publish, run_flagship
 from ..store import Store
+from .auth import get_actor
 from .deps import get_analyst, get_hub, get_store
 
 router = APIRouter(prefix="/api", tags=["operations"])
@@ -79,8 +80,8 @@ def tasks(store: Store = Depends(get_store)) -> list[dict]:
 
 
 @router.post("/tasks")
-def create_task(body: TaskIn, store: Store = Depends(get_store)) -> dict:
-    return store.create_task(body.mitigation_id, body.owner, body.due_days)
+def create_task(body: TaskIn, store: Store = Depends(get_store), actor: str = Depends(get_actor)) -> dict:
+    return store.create_task(body.mitigation_id, body.owner, body.due_days, actor=actor)
 
 
 class TaskUpdate(BaseModel):
@@ -88,8 +89,8 @@ class TaskUpdate(BaseModel):
 
 
 @router.patch("/tasks/{task_id}")
-async def update_task(task_id: str, body: TaskUpdate, store: Store = Depends(get_store), hub: Hub = Depends(get_hub)) -> dict:
-    out = store.update_task(task_id, body.status)
+async def update_task(task_id: str, body: TaskUpdate, store: Store = Depends(get_store), hub: Hub = Depends(get_hub), actor: str = Depends(get_actor)) -> dict:
+    out = store.update_task(task_id, body.status, actor=actor)
     if out.get("event"):
         await publish(store, hub, out["event"], out.get("snapshot"))
     return {"task": out["task"], "summary": store.summary()}

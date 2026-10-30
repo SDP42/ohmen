@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from ..core import compliance, mitigation, resilience, scenario
 from ..store import Store
+from .auth import get_actor
 from .deps import get_store
 
 router = APIRouter(prefix="/api", tags=["lab"])
@@ -34,11 +35,11 @@ def templates(store: Store = Depends(get_store)) -> dict:
 
 
 @router.post("/scenarios/run")
-def run(cfg: ScenarioIn, store: Store = Depends(get_store)) -> dict:
+def run(cfg: ScenarioIn, store: Store = Depends(get_store), actor: str = Depends(get_actor)) -> dict:
     body = cfg.model_dump()
     mc = body.pop("monte_carlo")
     result = scenario.run(store.twin, body, store.events, monte_carlo=mc)
-    store.remember_scenario(result)
+    store.remember_scenario(result, actor=actor)
     return result
 
 
