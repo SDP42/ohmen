@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from .api import intel, lab, ops, twin
+from .api import auth, intel, lab, ops, twin
 from .core.analyst import Analyst
 from .core.mitigation import MitigationError
 from .db import Database
@@ -56,7 +56,7 @@ async def bad_request(_: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=400, content={"detail": str(exc)})
 
 
-for module in (twin, intel, lab, ops):
+for module in (auth, twin, intel, lab, ops):
     app.include_router(module.router)
 
 if FRONTEND_DIST.exists():
