@@ -117,8 +117,10 @@ export default function CoreScene({ accent = "#4f8dff", pulse = 0 }: { accent?: 
   return (
     <Canvas dpr={[1, 1.75]} camera={{ position: [0, 1.5, 13], fov: 42 }} onCreated={({ gl }) => gl.setClearColor("#03060d")}>
       <fog attach="fog" args={["#03060d", 14, 40]} />
-      <Core accent={accent} pulse={pulse} />
-      <Swarm accent={accent} />
+      <group position={[3.4, 0.2, 0]}>
+        <Core accent={accent} pulse={pulse} />
+        <Swarm accent={accent} />
+      </group>
       <Sparkles count={120} scale={[24, 10, 24]} size={2} speed={0.3} color="#8cc8ff" />
       <Floor />
       <Rig />
