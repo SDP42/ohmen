@@ -125,7 +125,11 @@ export default function ScenarioLab() {
   const { data: graph } = useGraph();
   const { data: templates } = useQuery({ queryKey: ["templates"], queryFn: api.templates });
   const { setScenario, select } = useUi();
-  const [cfg, setCfg] = useState<ScenarioConfig>({ type: "exploitation", asset: params.get("asset") ?? "GW-001", severity: "high", reachability: "configured", depth: 4, mitigations: [], monte_carlo: true, runs: 600 });
+  const [cfg, setCfg] = useState<ScenarioConfig>(() => {
+    const base: ScenarioConfig = { type: "exploitation", asset: params.get("asset") ?? "GW-001", severity: "high", reachability: "configured", depth: 4, mitigations: [], monte_carlo: true, runs: 600 };
+    const vendor = params.get("vendor");
+    return vendor ? { ...base, type: "vendor_compromise", vendor } : base;
+  });
   const [result, setResult] = useState<ScenarioResult | null>(null);
   const [pinned, setPinned] = useState<ScenarioResult | null>(null);
   const [clock, setClock] = useState(0);
