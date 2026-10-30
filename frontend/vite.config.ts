@@ -10,6 +10,9 @@ export default defineConfig({
       "/api": { target: "http://localhost:8010", changeOrigin: true, ws: true },
     },
   },
+  worker: {
+    format: "es",
+  },
   build: {
     chunkSizeWarningLimit: 2500,
   },
