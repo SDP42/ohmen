@@ -13,6 +13,7 @@ import type {
   Summary,
   TwinEvent,
 } from "./types";
+import { type User, useAuth } from "./auth";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -23,7 +24,11 @@ export class ApiError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
     ...init,
-    headers: { "content-type": "application/json", ...(init?.headers ?? {}) },
+    headers: {
+      "content-type": "application/json",
+      ...(useAuth.getState().token ? { authorization: `Bearer ${useAuth.getState().token}` } : {}),
+      ...(init?.headers ?? {}),
+    },
   });
   if (!res.ok) {
     let detail = res.statusText;
@@ -49,6 +54,9 @@ export interface RiskRanking {
 }
 
 export const api = {
+  login: (persona_id: string) => post<{ token: string; user: User }>("/auth/login", { persona_id }),
+  logout: () => post<{ signed_out: boolean }>("/auth/logout", {}),
+  me: () => request<User>("/auth/me"),
   summary: () => request<Summary>("/twin/summary"),
   graph: () => request<GraphData>("/graph"),
   asset: (id: string) => request<AssetDetail>(`/assets/${id}`),
